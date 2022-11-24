@@ -1,15 +1,8 @@
-![](cover.png)
+## Damn Vulnerable DeFi_Appworks
 
-**A set of challenges to learn offensive security of smart contracts in Ethereum.**
+-   有將測試 1~5 題寫入到 package.json 的 script
 
-Featuring flash loans, price oracles, governance, NFTs, lending pools, smart contract wallets, timelocks, and more!
-
-## Play
-
-Visit [damnvulnerabledefi.xyz](https://damnvulnerabledefi.xyz)
-
-## Disclaimer
-
-All Solidity code, practices and patterns in this repository are DAMN VULNERABLE and for educational purposes only.
-
-DO NOT USE IN PRODUCTION.
+```
+npm install
+npm run week15
+```
